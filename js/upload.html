@@ -1,0 +1,169 @@
+
+<div id="viz" class='container'> 
+  <canvas id="analyser"></canvas>
+  <canvas id="wavedisplay"></canvas>  
+  </div>
+<div id="controls">
+  <button class='btn btn-success' id="record" onclick="toggleRecording(this);">RECORD</button>
+  <a id="save" href="#/"><button class='btn' ng-click="send_newTrack();updateSound();download_track = null">DOWNLOAD</button></a>
+  <input placeholder='recording name'type="text" id='download_input' ng-model='download_track'>
+</div>
+  <select ng-model='selected' ng-change="changedValue(selected.name);song()" ng-options="item.id+' ('+ item.name +')' for item in current_user_tracks">
+    <option value="">TRACK</option>
+    </select>
+    
+      <div class='control'>
+      <label class='btn' id='second-upload'>SELECT - FILE
+    <input type="file" file-model="myFile"/>
+    </label>
+    <button class='btn btn-danger' ng-click="uploadFile(selected.name);updateSound()">UPLOAD</button>
+	<button class='btn btn-default col-md-2 play' id='load' >PLAY</button>
+   <!--  <button class='btn btn-default' id='play' ng-click='loadSound();track_list()'>LOAD</button> -->
+    <button class='btn btn-default stop' id='pause'>PAUSE</button>
+    <button class='btn btn-default playSound' id='delete'
+     ng-click="deleteTrack(selected.id,selected.name,selected.name);updateSound()">DELETE</button>
+      <ul style='position:absolute;top:540px;left:30px;color:black'><h3 ng-repeat='(key,val) in selected'>{{key}}  -  {{val}}</h3>
+      </ul>
+</div>
+    <div ng-show='show_playback' id='edit-playback'>
+      <h2 class='playback-label' id='playback-label'>playback rate</h2>
+    <input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
+    <span class="playback-rate-value">1.0</span>
+    </div>
+    <div ng-show='show_loop' id='edit-loop'>
+      <h1 class='loop-label'>LOOP</h1>
+      <h2 class='loop-label' id='playback-loop'>begin loop</h2>
+    <input class="loopstart-control" type="range" min="0" max="20" step="1" value="0">
+    <span class="loopstart-value">0</span>
+
+    <h2  class='loop-label'id='playback-loop'>end loop</h2>
+    <input class="loopend-control" type="range" min="0" max="20" step="1" value="0">
+    <span class="loopend-value">0</span>  
+    <label>volume</label>
+    <input id="gainSlider" type="range" min="0" max="1" step="0.1" value="0.5"/>
+    </div>
+</div>
+</div>
+  <div>
+        <button ng-click='show_playback = !show_playback' class='btn' id="playback" href="#">TRACK RATE</button>
+        <button ng-click='show_loop = !show_loop' class='btn' id="loop_btn" href="#">CREATE LOOP</button>
+  </div>
+
+  <!-- $scope.share_files = function(shared) {
+      $scope.selected_share = false
+      $scope.shared_tracks = []
+      $scope.shared_tracks.push(shared)
+      if($scope.selected_share) {
+        $scope.shared_tracks.length = 0
+      }
+      console.log($scope.shared_tracks)
+      var grouped_share = 
+        {tracks:$scope.shared_tracks,
+        send_user:loggedInUsers.listUser().username,
+        receiving_user:$scope.shared_user_target,
+        copied:moment().format("MMM Do YY")} -->
+
+<div id='share_table'>
+<label for="share_user">share your tracks with</label>
+<input placeholder='name' type="text" id="shared_input" class='form-control' ng-model='shared_user_target'>
+
+ <table class="table table-inverse">
+<thead class='thead'>
+<th>track</th>
+</thead>
+<tr ng-repeat='track in current_user_tracks'>
+<td class='td_tracks' ng-click="share_files(track.name)">{{track.name}}</td>
+</tr>
+</table>
+<button class='btn' ng-click='submit_shares(shared_user_target);shared_user_target=null'>share tracks</button>
+<button class='btn' ng-click='reset_shares()'>reset tracklist</button>
+
+</div>
+  <!-- /*...........................second track..................................*/ -->
+
+<select id='select-two-id' ng-model='selectedTwo' ng-change="changedValueTwo(selectedTwo.name);songTwo()" ng-options="item.id+' ('+ item.name +')' for item in current_user_tracks" >
+    <option value="">TRACK-#2</option>
+    </select>
+    
+      <div class='controlTwo'>
+  <button class='btn btn-default col-md-2 playTwo' id='playTwo' >PLAY-#2</button>
+    <button class='btn btn-default stopTwo' id='pauseTwo'>PAUSE-#2</button>
+</div>
+    <div ng-show='show_playback_two' id='edit-playback-two'>
+      <h2 class='playback-label-two' id='playback-label-two'>playback rate - 2</h2>
+    <input class="playback-rate-control-two" type="range" min="0.25" max="3" step="0.05" value="1">
+    <span class="playback-rate-value-two">1.0</span>
+    </div>
+    <div ng-show='show_loop_two' id='edit-loop-two'>
+      <h1 class='loop-label-two'>LOOP - 2</h1>
+      <h2 class='loop-label-two' id='playback-loop-two'>begin loop</h2>
+    <input class="loopstart-control-two" type="range" min="0" max="20" step="1" value="0">
+    <span class="loopstart-value-two">0</span>
+
+    <h2  class='loop-label-two'id='playback-loop-two'>end loop</h2>
+    <input class="loopend-control-two" type="range" min="0" max="20" step="1" value="0">
+    <span class="loopend-value-two">0</span>  
+    </div>
+</div>
+</div>
+<div>
+<button class='btn' id='playback_btn_two' ng-click='show_playback_two = !show_playback_two'>PLAYBACK-#2</button>
+<button class='btn' id='loop_btn_two' ng-click='show_loop_two = !show_loop_two'>LOOP-#2</button>
+
+<button class='btn' id='metronome' ng-click='mergeFiles(selected.name,selectedTwo.name,track_name);updateSound()'>MERGE-FILES</button>
+<input placeholder='new track name' id='merge_input' type="text" ng-model='track_name' class='form-control'>
+
+</div>
+<!-- <div id='user_background' > -->
+<button ng-show='log_out'  class='btn' id='btn_logout' ng-click='logged_in = !logged_in;log_out = !log_out;current_user_logout();updateSound()'>sign out</button>
+<button ng-show='logged_in' class='btn signin_user' id='signin_user' ng-click='signin_user = !signin_user;' ng-hide='log_out'>sign in</button>
+<button class='btn show_user' ng-click='create_user = !create_user;'>sign up</button>
+
+<form name='sign_in_form' id='signin' ng-show='signin_user' ng-submit='currentUser(user.logged_in,user.logged_in_password);sign_in_form.$setPristine()'>
+  <div class='form-field'>
+<h2 class='signin_label'>SIGN IN</h2>
+<label for="username">username</label>
+<input type="text" class='form-control' ng-model='user.logged_in' >
+<label for="password">password</label>
+<input type="password" class='form-control' ng-model='user.logged_in_password'>
+<button type='submit' id='sign_up_btn' class='btn' ng-show='logged_in' ng-hide='btn_login' ng-show='btn_logout' ng-click='signin_user = !signin_user;log_out = !log_out;updateSound()'>submit</button>
+</div>
+</form>
+
+<div ng-show='create_user' >
+<form name='users' id='user_form' ng-submit='addUser(new_user.username,new_user.email,new_user.password)'>
+    <h2 style='padding-bottom:0px'>SIGN UP</h2>
+    <label class='signin_label' for="">create username</label>
+      <input type="text" ng-model='new_user.username' class='form-control' required>
+    <label class='signin_label' for="">create password</label>
+      <input type='password' ng-model='new_user.password' class='form-control' required>
+    <label class='signin_label' for="" >add email</label>
+      <input type='email' ng-model='new_user.email' class='form-control'>
+      <button class='btn pull-left' ng-click='create_user = !create_user' id='submit_btn' required>submit</button>
+</form>
+</div>
+</div>
+
+<!-- <form name='del_user' ng-submit='deleteUser(...)'>
+  <label for="">delete user</label>
+    <input type="text" ng-model='...'>
+</form> -->
+<!-- <button class='btn' style='position:fixed;top:600px;left:50px' ng-click='deleteUser(user.current_user_view)'>delete test</button>
+<input type="text" style='position:fixed;top:640px;left:50px' ng-model='user.current_user_view'> -->
+
+
+
+
+<!--................................old tags just in case...................................-->
+ 
+  <!-- <button class='btn btn-default col-md-2 playSound' id='load' ng-click='playSound(selected.id)'>PLAY</button> -->
+
+<!--   <button class='btn btn-default stop' id='pause' ng-click='pauseSound()'>PAUSE</button>
+ --> 
+
+
+
+ <!-- <button id='playback-play' class="play btn" style='background-color: rgba(0, 0, 0, 0.0);'>Play</button>
+    <button id='playback-stop' class="stop btn" style='background-color: rgba(0, 0, 0, 0.0);'>Stop</button> -->
+
+
