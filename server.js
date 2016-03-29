@@ -76,7 +76,7 @@ var express = require('express'),
 
 
 
-/*........................delete selected file from db && local fs...........................*/
+/*........................delete selected file from db && local dirs...........................*/
 
 	app.post('/api/removecurrenttrack',function(req,res) {
 		var removeItemID = req.body.id,
