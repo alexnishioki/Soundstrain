@@ -88,6 +88,33 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
   $(document).ready(function(){
     $(this).scrollTop(0);
 });
+$('[rel=popover]').popover({placement:'top',background:'red'});
+$scope.check_help = false
+$('[rel=popover]').popover({'trigger': 'manual'});
+$scope.check_tooltip = function() {
+  $scope.check_help = !$scope.check_help
+  if($scope.check_help) {
+$('[rel=popover]').popover('show');
+} else{
+  $('[rel=popover]').popover('destroy');
+}
+}
+
+
+
+
+// $('body').on('click', function (e) {
+//     $('[data-toggle="popover"]').each(function () {
+//         //the 'is' for buttons that trigger popups
+//         //the 'has' for icons within a button that triggers a popup
+//         if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+//             $(this).popover('hide');
+//         }
+//     });
+// });
+
+// $('#help').on('click',function() { $('body').popover('destroy');})
+
     $scope.allTracks = []
     $scope.currentTrack = function() {
         console.log($scope.curTrack)
@@ -115,7 +142,13 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
                 console.log('file-name: ' + $scope.onlyFileName)
                 console.log('factory-list-uploads: ' + $scope.listFile())
                 console.log('saved-data-as-music(key)-object :' + saveData.music)
+                $scope.login_check = loggedInUsers.listUser().username
+                if($scope.login_check !== undefined) {
         $http.post('/api/currentfiles',saveData)
+      } else {
+        console.log('no user logged in')
+        return
+      }
     }
 
     $scope.globalDbData;
@@ -175,29 +208,8 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
         $timeout($scope.loadSound,1000)
     }
 
-  // $scope.playSound = function(id) {
-  //       $scope.played = createjs.Sound.play(id) = createjs.Sound.stop(id)
-  //       $scope.check =  $scope.played ? createjs.Sound.play(id):createjs.Sound.stop(id)
-  //   }
-
-  // $scope.pauseSound = function(id) {
-  //   createjs.Sound.stop(id) 
-  // }
-
-  //   $scope.togglePlayback = function(sound){
-  //       if(sound._paused){
-  //           $scope.isPlaying = false;
-  //           sound.pause();
-  //       } else {
-  //           $scope.isPlaying = true;
-  //           sound.resume();
-  //       }
-    
-  //   }
-
     $scope.trackList=[];        
     $scope.changedValue=function(item) {
-        // console.log($scope.trackList)
         if(item !== undefined){
         $scope.trackList.push(item);
         }
@@ -205,7 +217,6 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
 
     $scope.trackListTwo=[];        
     $scope.changedValueTwo=function(item) {
-        // console.log($scope.trackList)
         if(item !== undefined){
         $scope.trackListTwo.push(item);
         }
@@ -228,27 +239,40 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
         }
 
         if(user_data_check.length === 0) {
-          $http.post('/api/users',userData)
-          $scope.new_user.username=""
-          $scope.new_user.email=""
-          $scope.new_user.password=""
-          return;
-              // userData.$setPristine()   
+          $http.post('/api/users',userData).then(function() {
+            loggedInUsers.addUser({
+              username:$scope.new_user.username,
+              email:$scope.new_user.email,
+              password:$scope.new_user.passwords})
+            console.log(loggedInUsers.listUser())
+          })
+          // $scope.new_user.username=""
+          // $scope.new_user.email=""
+          // $scope.new_user.password=""
+            return;
         } else if
         (user_data_check.email == $scope.new_user.email && user_data_check.username == $scope.new_user.username && user_data_check.password == $scope.new_user.password) {   
            console.log('username already taken') 
-           return undefined;
+            return;
         }else {
-              $http.post('/api/users',userData)
-              $scope.new_user.username=""
-              $scope.new_user.email=""
-              $scope.new_user.password=""
+              $http.post('/api/users',userData).then(function() {
+                loggedInUsers.addUser(
+                  {username:$scope.new_user.username,
+                  email:$scope.new_user.email,
+                  password:$scope.new_user.password})
+                console.log(loggedInUsers.listUser())
+                
+              })
+              // $scope.new_user.username=""
+              // $scope.new_user.email=""
+              // $scope.new_user.password=""
         }   
       
       })
     }
-
+    
     $scope.currentUser = function(user,password) {
+      $scope.display_user = loggedInUsers.listUser().name
       // $scope.logged_in_user = false
       $scope.user.logged_in = user
       $scope.user.logged_in_password = password
@@ -264,7 +288,8 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
                 console.log(loggedInUsers.listUser().username)
                 $scope.user.logged_in = "";
                 $scope.user.logged_in_password = "";
-
+                $scope.display_user = loggedInUsers.listUser().name
+                console.log($scope.display_user)
         }
       }
       })
@@ -347,11 +372,17 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
         send_user:loggedInUsers.listUser().username,
         receiving_user:$scope.shared_user_target,
         copied:moment().format("MMM Do YY")}
-      console.log('grouped_share: '+grouped_share)
+      console.log(grouped_share)
+      if(grouped_share.receiving_user !== undefined &&
+         grouped_share.tracks !== undefined &&
+         grouped_share.send_user !== undefined) {
           $http.post('/api/sharedtracks',grouped_share)
-          }
+      } else {
+        console.log('empty')
+        return;
+        }
+      }
   
-
     $scope.mergeFiles = function(track_one,track_two,track_name) {
       console.log(track_one,track_two,track_name)
       var mergeTracks = {track_one:track_one,
@@ -367,6 +398,89 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
     }
 
     /*.............................playback controls...........................*/
+
+
+// 1,100,115,40 
+
+      $scope.sliderA = {
+  value: 116,
+  options: {
+    floor: 0,
+    ceil: 200
+  }
+};
+
+$scope.sliderB = {
+  value: 114,
+  options: {
+    floor: 0,
+    ceil: 200
+  }
+};
+
+$scope.sliderC = {
+  value: 2,
+  options: {
+    floor: 1,
+    ceil: 10
+  }
+};
+
+$scope.sliderD = {
+  value: 1,
+  options: {
+    floor: 0,
+    ceil: 7
+  }
+};
+
+$scope.sliderE = {
+  value: 75,
+  options: {
+    floor: 0,
+    ceil: 100
+  }
+};
+
+      $scope.sliderF = {
+  value: 116,
+  options: {
+    floor: 0,
+    ceil: 200
+  }
+};
+
+$scope.sliderG = {
+  value: 114,
+  options: {
+    floor: 0,
+    ceil: 200
+  }
+};
+
+$scope.sliderH = {
+  value: 2,
+  options: {
+    floor: 1,
+    ceil: 10
+  }
+};
+
+$scope.sliderI = {
+  value: 1,
+  options: {
+    floor: 0,
+    ceil: 7
+  }
+};
+
+$scope.sliderJ = {
+  value: 75,
+  options: {
+    floor: 0,
+    ceil: 100
+  }
+};
 
     $scope.audioPath = '../public/users/'+loggedInUsers.listUser().username+'/'
     $scope.audioPathTwo = '../public/users/'+loggedInUsers.listUser()+'/'
@@ -387,6 +501,8 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
     var loopendControl = document.querySelector('.loopend-control');
     var loopendValue = document.querySelector('.loopend-value');
     loopendControl.setAttribute('disabled', 'disabled');
+    var _ctx = document.querySelector('#sourcedisplay');
+    var ctx = _ctx.getContext('2d');
     
     $scope.getData = function() {
         for(var i = 0; i < $scope.trackList.length; i++) {
@@ -395,6 +511,9 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
 
         console.log($scope.lastTrackListIndex)
       source = audioCtx.createBufferSource();
+      analyser = audioCtx.createAnalyser();
+      var freq = new Uint8Array(analyser.frequencyBinCount)
+      analyser.fftSize = 256;
       request = new XMLHttpRequest();
       request.open('GET','../public/users/'+loggedInUsers.listUser().username+'/'+$scope.lastTrackListIndex, true);
       console.log('../public/users/'+loggedInUsers.listUser().username+'/'+$scope.lastTrackListIndex)
@@ -402,15 +521,61 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
       request.responseType = 'arraybuffer';
       request.onload = function() {
         var audioData = request.response;
+        var fFrequencyData = new Float32Array(analyser.frequencyBinCount);
+        var bFrequencyData = new Uint8Array(analyser.frequencyBinCount);
         audioCtx.decodeAudioData(audioData, function(buffer) {
             myBuffer = buffer;
             songLength = buffer.duration;
             source.buffer = myBuffer;
             source.playbackRate.value = playbackControl.value;
-            source.connect(audioCtx.destination);
             source.loop = true;
             loopstartControl.setAttribute('max', Math.floor(songLength));
             loopendControl.setAttribute('max', Math.floor(songLength));
+            source.connect(analyser)
+            analyser.getFloatFrequencyData(fFrequencyData);
+            analyser.getByteFrequencyData(bFrequencyData);
+            analyser.getByteTimeDomainData(bFrequencyData);
+
+            console.log(fFrequencyData)
+            console.log(bFrequencyData)
+
+
+            analyser.connect(audioCtx.destination);
+            console.log(analyser)
+            console.log(bFrequencyData)
+            console.log(fFrequencyData)
+
+            draw = function () {
+    var width, height, barWidth, barHeight, barSpacing, frequencyData, barCount, loopStep, i, hue;
+ 
+    width = _ctx.width;
+    height = _ctx.height;
+    barWidth = $scope.sliderD.value;
+    barSpacing = $scope.sliderC.value;
+    ctx.clearRect(0, 0, width, height);
+    frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(frequencyData);
+    barCount = Math.round(width / (barWidth + barSpacing));
+    loopStep = Math.floor(frequencyData.length / barCount);
+ 
+    for (i = 0; i < barCount; i++) {
+        barHeight = frequencyData[i * loopStep];
+        hue = parseInt($scope.sliderA.value * ($scope.sliderB.value - (barHeight / 255)), 10);
+        ctx.fillStyle = 'hsl(' + hue + ','+$scope.sliderE.value+'%,50%)';
+        ctx.fillRect(((barWidth + barSpacing) * i) + (barSpacing / 2), height, barWidth - barSpacing, -barHeight);
+    }
+     
+};
+$scope.startFreq = function () {
+    /* Draw sound wave spectrum every 10 milliseconds. */
+    $scope.timer = setInterval($scope.timerFunction, 10);
+};
+
+$scope.timerFunction = function () {
+    draw();
+  }
+  $scope.startFreq()
+          
           },
           function(e){"Error with decoding audio data" + e.err});
       }
@@ -421,6 +586,9 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
       $scope.getData();
       console.log($scope.trackList)
       source.start(0);
+      console.log(source)
+      console.log(analyser)
+      console.log()
       play.setAttribute('disabled', 'disabled');
       playbackControl.removeAttribute('disabled');
       loopstartControl.removeAttribute('disabled');
@@ -464,6 +632,8 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
     var loopendControlTwo = document.querySelector('.loopend-control-two');
     var loopendValueTwo = document.querySelector('.loopend-value-two');
     loopendControlTwo.setAttribute('disabled', 'disabled');
+    var _ctx = document.querySelector('#sourcedisplayTwo')
+    var ctx = _ctx.getContext('2d');
 
     $scope.getDataTwo = function() {
         for(var i = 0; i < $scope.trackListTwo.length; i++) {
@@ -471,20 +641,71 @@ app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUplo
         }
         console.log($scope.lastTrackListIndexTwo)
       sourceTwo = audioCtx.createBufferSource();
+      analyserTwo = audioCtx.createAnalyser();
+      analyserTwo.fftSize = 256;
       requestTwo = new XMLHttpRequest();
       requestTwo.open('GET','../public/users/'+loggedInUsers.listUser().username+'/'+$scope.lastTrackListIndexTwo, true);
       requestTwo.responseType = 'arraybuffer';
       requestTwo.onload = function() {
+        var frequencyDataTwo = new Uint8Array(analyserTwo.frequencyBinCount);
         var audioDataTwo = requestTwo.response;
         audioCtx.decodeAudioData(audioDataTwo, function(buffer) {
             myBuffer = buffer;
             songLength = buffer.duration;
             sourceTwo.buffer = myBuffer;
             sourceTwo.playbackRate.value = playbackControlTwo.value;
-            sourceTwo.connect(audioCtx.destination);
             sourceTwo.loop = true;
+            sourceTwo.connect(analyserTwo)
+            analyserTwo.getByteFrequencyData(frequencyDataTwo);
+            analyserTwo.connect(audioCtx.destination);
             loopstartControlTwo.setAttribute('max', Math.floor(songLengthTwo));
             loopendControlTwo.setAttribute('max', Math.floor(songLengthTwo));
+
+              drawTwo = function () {
+    var width, height, barWidth, barHeight, barSpacing, frequencyDataTwo, barCount, loopStep, i, hue;
+ 
+    width = _ctx.width;
+    height = _ctx.height;
+    barWidth = $scope.sliderI.value;
+    barSpacing = $scope.sliderH.value;
+ 
+    ctx.clearRect(0, 0, width, height);
+    frequencyDataTwo = new Uint8Array(analyserTwo.frequencyBinCount);
+    analyserTwo.getByteFrequencyData(frequencyDataTwo);
+    barCount = Math.round(width / (barWidth + barSpacing));
+    loopStep = Math.floor(frequencyDataTwo.length / barCount);
+ 
+    for (i = 0; i < barCount; i++) {
+        barHeight = frequencyDataTwo[i * loopStep];
+        hue = parseInt($scope.sliderF.value * ($scope.sliderG.value - (barHeight / 255)), 10);
+        ctx.fillStyle = 'hsl(' + hue + ','+$scope.sliderJ.value+'%,50%)';
+        ctx.fillRect(((barWidth + barSpacing) * i) + (barSpacing / 2), height, barWidth - barSpacing, -barHeight);
+    }
+     
+};
+
+// width = _ctx.width;
+//     height = _ctx.height;
+//     barWidth = $scope.sliderD.value;
+//     barSpacing = $scope.sliderC.value;
+//     ctx.clearRect(0, 0, width, height);
+//     frequencyData = new Uint8Array(analyser.frequencyBinCount);
+//     analyser.getByteFrequencyData(frequencyData);
+//     barCount = Math.round(width / (barWidth + barSpacing));
+//     loopStep = Math.floor(frequencyData.length / barCount);
+ 
+//     for (i = 0; i < barCount; i++) {
+//         barHeight = frequencyData[i * loopStep];
+//         hue = parseInt($scope.sliderA.value * ($scope.sliderB.value - (barHeight / 255)), 10);
+//         ctx.fillStyle = 'hsl(' + hue + ','+$scope.sliderE.value+'%,50%)';
+$scope.startFreqTwo = function () {
+    $scope.timerTwo = setInterval($scope.timerFunctionTwo, 10);
+};
+
+$scope.timerFunctionTwo = function () {
+    drawTwo();
+  }
+  $scope.startFreqTwo()
           },
           function(e){"Error with decoding audio data" + e.err});
       }

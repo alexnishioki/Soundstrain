@@ -24,7 +24,7 @@ var rafID = null;
 var analyserContext = null;
 var canvasWidth, canvasHeight;
 var recIndex = 0; 
-    /*......................my_changes............................*/
+    /*......................changes............................*/
 
     
     /*..........................end...............................*/
@@ -97,8 +97,8 @@ function updateAnalysers(time) {
 
     // analyzer draw code here
     {
-        var SPACING = 3;
-        var BAR_WIDTH = 1;
+        var SPACING = 5;
+        var BAR_WIDTH = 3;
         var numBars = Math.round(canvasWidth / SPACING);
         var freqByteData = new Uint8Array(analyserNode.frequencyBinCount);
 
