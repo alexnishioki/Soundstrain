@@ -12,8 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+var app = angular.module('UploadCtrl',['$scope','$http','$$window','$timeout','savd_files','savedUsers','loggedInUsers','getUserData',function($scope,$http,$$window,$timeout,savdFiles,savedUsers,logggedin_users,getUserData) {
 
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
+$window.AudioContext = $window.AudioContext || $window.webkitAudioContext;
 
 var audioContext = new AudioContext();
 var audioInput = null,
@@ -42,7 +43,7 @@ function saveAudio() {
 }
 
 function gotBuffers( buffers ) {
-    var canvas = document.getElementById( "wavedisplay" );
+    var canvas = document.querySelector( "#wavedisplay" );
 
     drawBuffer( canvas.width, canvas.height, canvas.getContext('2d'), buffers[0] );
 
@@ -56,7 +57,7 @@ function doneEncoding( blob ) {
     recIndex++;
 }
 
-function toggleRecording( e ) {
+$scope.toggleRecording = function() {
     if (e.classList.contains("recording")) {
         // stop recording
         audioRecorder.stop();
@@ -83,7 +84,7 @@ function convertToMono( input ) {
 }
 
 function cancelAnalyserUpdates() {
-    window.cancelAnimationFrame( rafID );
+    $window.cancelAnimationFrame( rafID );
     rafID = null;
 }
 
@@ -123,7 +124,7 @@ function updateAnalysers(time) {
         }
     }
     
-    rafID = window.requestAnimationFrame( updateAnalysers );
+    rafID = $window.requestAnimationFrame( updateAnalysers );
 }
 
 function toggleMono() {
@@ -187,4 +188,5 @@ function initAudio() {
         });
 }
 
-window.addEventListener('load', initAudio );
+$window.addEventListener('load', initAudio );
+}])

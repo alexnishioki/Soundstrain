@@ -1,4 +1,3 @@
-
 <div id="viz" class='container'> 
   <canvas id="analyser"></canvas>
   <canvas id="wavedisplay" ></canvas> 
@@ -6,8 +5,8 @@
   <canvas id="sourcedisplayTwo"></canvas>
   </div>
 <div id="controls">
-  <button class='btn btn-success' id="record" onclick="toggleRecording(this);" >RECORD</button>
-  <a id="save" href="#/"><button class='btn' ng-click="send_newTrack();updateSound();download_track = null" >DOWNLOAD</button></a>
+  <button class='btn' id="record" ng-click="toggleRecording();" >RECORD</button>
+  <a id="save" href="#/"><button class='btn' ng-click="Recorder.setupDownload();send_newTrack();updateSound();download_track = null" >DOWNLOAD</button></a>
   <input placeholder='recording name'type="text" id='download_input' ng-model='download_track' >
 </div>
   <select ng-model='selected' ng-change="changedValue(selected.name);song()" ng-options="item.id+' ('+ item.name +')' for item in current_user_tracks" >
@@ -20,10 +19,10 @@
     </label>
     <button id='newLoad' class='btn' ng-click='loadSound()'>LOAD</button>
     <button class='btn btn-danger' ng-click="uploadFile(selected.name);updateSound()" >UPLOAD</button>
-	<button class='btn btn-default col-md-2 play' id='load' >PLAY</button>
+  <button class='btn btn-default col-md-2 play' id='load' >PLAY</button>
     <!-- <button class='btn btn-default' id='play' ng-click='loadSound();track_list()'>LOAD</button> -->
-    <button class='btn btn-default stop' id='pause' >PAUSE</button>
-    <button class='btn btn-default playSound' id='delete'
+    <button class='btn stop' id='pause' >PAUSE</button>
+    <button class='btn playSound' id='delete'
      ng-click="deleteTrack(selected.id,selected.name,selected.name);updateSound()">DELETE</button>
       <!-- <ul style='position:absolute;top:540px;left:30px;color:black'><h3 ng-repeat='(key,val) in selected'>{{key}}  -  {{val}}</h3>
       </ul> -->
@@ -207,5 +206,3 @@
 </form> -->
 <!-- <button class='btn' style='position:fixed;top:600px;left:50px' ng-click='deleteUser(user.current_user_view)'>delete test</button>
 <input type="text" style='position:fixed;top:640px;left:50px' ng-model='user.current_user_view'> -->
-
-

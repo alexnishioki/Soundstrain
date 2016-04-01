@@ -37,7 +37,6 @@ app.factory('getUserData',["$http",function($http) {
     return $http.get('/api/currentfiles')
     }
     return getUserData
-    // console.log(getUserData)
   }])
 
 app.factory('savedFiles',function() {
@@ -75,45 +74,10 @@ app.factory('loggedInUsers',function() {
   return loggedInUsersInstance
 })
 
-// app.factory('getCurrentUserData',["$http",function($http) {
-//   var getCurrentUserData = {}
-//   getCurrentUserData.apiData = function() {
-//     return $http.get('../public/users/'+loggedInUsers.listUser().username)
-//     }
-//     return getCurrentUserData
-//     // console.log(getUserData)
-//   }])
-
 app.controller('UploadCtrl',['$scope', '$http', '$timeout', '$window', 'fileUpload','getUserData','savedFiles','saved_users','loggedInUsers', function($scope,$http,$timeout,$window,fileUpload,getUserData,savedFiles,saved_users,loggedInUsers) {
   $(document).ready(function(){
     $(this).scrollTop(0);
 });
-$('[rel=popover]').popover({placement:'top',background:'red'});
-$scope.check_help = false
-$('[rel=popover]').popover({'trigger': 'manual'});
-$scope.check_tooltip = function() {
-  $scope.check_help = !$scope.check_help
-  if($scope.check_help) {
-$('[rel=popover]').popover('show');
-} else{
-  $('[rel=popover]').popover('destroy');
-}
-}
-
-
-
-
-// $('body').on('click', function (e) {
-//     $('[data-toggle="popover"]').each(function () {
-//         //the 'is' for buttons that trigger popups
-//         //the 'has' for icons within a button that triggers a popup
-//         if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-//             $(this).popover('hide');
-//         }
-//     });
-// });
-
-// $('#help').on('click',function() { $('body').popover('destroy');})
 
     $scope.allTracks = []
     $scope.currentTrack = function() {
@@ -222,6 +186,21 @@ $('[rel=popover]').popover('show');
         }
     }
 
+    // $scope.watch($scope.trackListTwo)
+    $scope.trackDownload = function() {
+      console.log($scope.downloading)
+      if($scope.trackListTwo.length++) {
+        console.log($scope.downloading)
+      }
+      if($scope.downloading) {
+        $scope.downloading
+        return
+      }
+    }
+    $scope.initTrackDownload = function() {
+    $timeout($scope.trackDownload,4000)
+  }
+$scope.initTrackDownload()
     /*.............................new users................................*/
  
     $scope.addUser = function(username,email,password) {
@@ -273,7 +252,6 @@ $('[rel=popover]').popover('show');
     
     $scope.currentUser = function(user,password) {
       $scope.display_user = loggedInUsers.listUser().name
-      // $scope.logged_in_user = false
       $scope.user.logged_in = user
       $scope.user.logged_in_password = password
       saved_users.all_users().then(function(res) {
@@ -282,7 +260,6 @@ $('[rel=popover]').popover('show');
         for(var cur in all_user_data) {
             if(all_user_data[cur].username === $scope.user.logged_in &&
              all_user_data[cur].password === $scope.user.logged_in_password) {
-              // loggedInUsers.removeUser()
               loggedInUsers.addUser(all_user_data[cur])
               $scope.display_user_btn = loggedInUsers.listUser().username || ""
                 console.log(loggedInUsers.listUser().username)
@@ -482,27 +459,36 @@ $scope.sliderJ = {
   }
 };
 
-    $scope.audioPath = '../public/users/'+loggedInUsers.listUser().username+'/'
-    $scope.audioPathTwo = '../public/users/'+loggedInUsers.listUser()+'/'
+$scope.sliderOsc = {
+  value: 50,
+  options: {
+    floor: 0,
+    ceil: 3000
+  }
+};
 
-    $scope.song=function(){
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var source;
-    var songLength;
-                    
-    var play = document.querySelector('.play');
-    var stop = document.querySelector('.stop');
-    var playbackControl = document.querySelector('.playback-rate-control');
-    var playbackValue = document.querySelector('.playback-rate-value');
-    playbackControl.setAttribute('disabled', 'disabled');
-    var loopstartControl = document.querySelector('.loopstart-control');
-    var loopstartValue = document.querySelector('.loopstart-value');
-    loopstartControl.setAttribute('disabled', 'disabled');
-    var loopendControl = document.querySelector('.loopend-control');
-    var loopendValue = document.querySelector('.loopend-value');
-    loopendControl.setAttribute('disabled', 'disabled');
-    var _ctx = document.querySelector('#sourcedisplay');
-    var ctx = _ctx.getContext('2d');
+      $scope.audioPath = '../public/users/'+loggedInUsers.listUser().username+'/'
+      $scope.audioPathTwo = '../public/users/'+loggedInUsers.listUser()+'/'
+  
+      $scope.song=function(){
+      var audioCtx = new ($window.AudioContext || $window.webkitAudioContext)();
+      var source;
+      var songLength;
+      var oscillator;
+                      
+      var play = document.querySelector('.play');
+      var stop = document.querySelector('.stop');
+      var playbackControl = document.querySelector('.playback-rate-control');
+      var playbackValue = document.querySelector('.playback-rate-value');
+      playbackControl.setAttribute('disabled', 'disabled');
+      var loopstartControl = document.querySelector('.loopstart-control');
+      var loopstartValue = document.querySelector('.loopstart-value');
+      loopstartControl.setAttribute('disabled', 'disabled');
+      var loopendControl = document.querySelector('.loopend-control');
+      var loopendValue = document.querySelector('.loopend-value');
+      loopendControl.setAttribute('disabled', 'disabled');
+      var _ctx = document.querySelector('#sourcedisplay');
+      var ctx = _ctx.getContext('2d');
     
     $scope.getData = function() {
         for(var i = 0; i < $scope.trackList.length; i++) {
@@ -511,6 +497,7 @@ $scope.sliderJ = {
 
         console.log($scope.lastTrackListIndex)
       source = audioCtx.createBufferSource();
+      oscillator = audioCtx.createOscillator();
       analyser = audioCtx.createAnalyser();
       var freq = new Uint8Array(analyser.frequencyBinCount)
       analyser.fftSize = 256;
@@ -520,6 +507,9 @@ $scope.sliderJ = {
 
       request.responseType = 'arraybuffer';
       request.onload = function() {
+        if($scope.downloading) {
+          stop()
+        }
         var audioData = request.response;
         var fFrequencyData = new Float32Array(analyser.frequencyBinCount);
         var bFrequencyData = new Uint8Array(analyser.frequencyBinCount);
@@ -535,15 +525,25 @@ $scope.sliderJ = {
             analyser.getFloatFrequencyData(fFrequencyData);
             analyser.getByteFrequencyData(bFrequencyData);
             analyser.getByteTimeDomainData(bFrequencyData);
+            analyser.connect(audioCtx.destination)
+          
 
             console.log(fFrequencyData)
             console.log(bFrequencyData)
 
 
-            analyser.connect(audioCtx.destination);
-            console.log(analyser)
+            // oscillator.connect(audioCtx.destination);
+            console.log(oscillator)
             console.log(bFrequencyData)
             console.log(fFrequencyData)
+          //   $scope.set_oscillator = function() {
+          //     oscillator.type = 'sawtooth';
+          //     oscillator.frequency.value = $scope.sliderOsc.value; // value in hertz
+          //     console.log(oscillator.frequency.value)
+              
+          //     oscillator.detune.value = Math.pow(2, 1/12) * 10;
+          //     oscillator.start(0);
+          // }
 
             draw = function () {
     var width, height, barWidth, barHeight, barSpacing, frequencyData, barCount, loopStep, i, hue;
@@ -567,7 +567,6 @@ $scope.sliderJ = {
      
 };
 $scope.startFreq = function () {
-    /* Draw sound wave spectrum every 10 milliseconds. */
     $scope.timer = setInterval($scope.timerFunction, 10);
 };
 
@@ -586,6 +585,7 @@ $scope.timerFunction = function () {
       $scope.getData();
       console.log($scope.trackList)
       source.start(0);
+      oscillator.start(0);
       console.log(source)
       console.log(analyser)
       console.log()
@@ -616,7 +616,7 @@ $scope.timerFunction = function () {
     }
 
     $scope.songTwo=function(){
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var audioCtx = new ($window.AudioContext || $window.webkitAudioContext)();
     var sourceTwo;
     var songLengthTwo;
 
@@ -660,6 +660,7 @@ $scope.timerFunction = function () {
             analyserTwo.connect(audioCtx.destination);
             loopstartControlTwo.setAttribute('max', Math.floor(songLengthTwo));
             loopendControlTwo.setAttribute('max', Math.floor(songLengthTwo));
+            
 
               drawTwo = function () {
     var width, height, barWidth, barHeight, barSpacing, frequencyDataTwo, barCount, loopStep, i, hue;
@@ -684,20 +685,6 @@ $scope.timerFunction = function () {
      
 };
 
-// width = _ctx.width;
-//     height = _ctx.height;
-//     barWidth = $scope.sliderD.value;
-//     barSpacing = $scope.sliderC.value;
-//     ctx.clearRect(0, 0, width, height);
-//     frequencyData = new Uint8Array(analyser.frequencyBinCount);
-//     analyser.getByteFrequencyData(frequencyData);
-//     barCount = Math.round(width / (barWidth + barSpacing));
-//     loopStep = Math.floor(frequencyData.length / barCount);
- 
-//     for (i = 0; i < barCount; i++) {
-//         barHeight = frequencyData[i * loopStep];
-//         hue = parseInt($scope.sliderA.value * ($scope.sliderB.value - (barHeight / 255)), 10);
-//         ctx.fillStyle = 'hsl(' + hue + ','+$scope.sliderE.value+'%,50%)';
 $scope.startFreqTwo = function () {
     $scope.timerTwo = setInterval($scope.timerFunctionTwo, 10);
 };
@@ -744,6 +731,7 @@ $scope.timerFunctionTwo = function () {
             
 }])
 
-app.controller('MainCtrl',function($scope,$http) {
+
+app.controller('AudioController',function($scope,$http) {
     
 })

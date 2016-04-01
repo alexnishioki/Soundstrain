@@ -1,4 +1,4 @@
-var app = angular.module('App',['ngRoute','ngAnimate','rzModule']);
+var app = angular.module('App',['ngRoute','ngAnimate','rzModule','ui.materialize']);
 
 
 	app.config(function($routeProvider) {
